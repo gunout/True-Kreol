@@ -633,6 +633,34 @@
             font-size: 0.9rem;
         }
 
+        .decode-demo {
+            background: rgba(0, 255, 255, 0.1);
+            border: 1px solid rgba(0, 255, 255, 0.3);
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 15px;
+            text-align: center;
+        }
+
+        .decode-demo-text {
+            color: var(--accent-green);
+            font-family: 'Orbitron', sans-serif;
+            margin-bottom: 10px;
+        }
+
+        .decode-example {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .decode-arrow {
+            color: var(--primary-cyan);
+            font-size: 1.5rem;
+        }
+
         @media (max-width: 768px) {
             h1 {
                 font-size: 2.5rem;
@@ -658,14 +686,23 @@
     <div class="container">
         <header>
             <h1>TRUTH CREOLE</h1>
-            <p class="subtitle">Analyseur de Créole Réunionnais</p>
+            <p class="subtitle">Analyseur Cyberpunk de Créole Réunionnais</p>
             <span class="free-badge">🔓 100% LIBRE ET GRATUIT</span>
         </header>
 
         <section class="input-section">
             <div class="input-group">
-                <label for="input-text">Entrez un mot créole </label>
-                <input type="text" id="input-text" placeholder="Ex: BONZOUR">
+                <label for="input-text">Entrez un mot créole ou une séquence numérique</label>
+                <input type="text" id="input-text" placeholder="Ex: BONZOUR ou 2.15.14.26.15.21.18">
+            </div>
+            
+            <div class="decode-demo">
+                <div class="decode-demo-text">🧪 Test de décodage</div>
+                <div class="decode-example">
+                    <span style="color: var(--accent-yellow);">2.15.14.26.15.21.18</span>
+                    <span class="decode-arrow">→</span>
+                    <span style="color: var(--primary-cyan); font-weight: bold;">BONZOUR</span>
+                </div>
             </div>
             
             <div class="button-group">
@@ -824,6 +861,7 @@
             'Ñ': 14
         };
 
+        // CORRECTION: Mapping inverse complet pour le décodage
         const ALPHABET_INVERSE = {
             1: 'A', 2: 'B', 3: 'C', 4: 'D', 5: 'E', 6: 'F', 7: 'G', 8: 'H', 9: 'I', 10: 'J',
             11: 'K', 12: 'L', 13: 'M', 14: 'N', 15: 'O', 16: 'P', 17: 'Q', 18: 'R', 19: 'S', 20: 'T',
@@ -911,6 +949,7 @@
             return resultat.join('.');
         }
 
+        // CORRECTION: Fonction de décodage améliorée
         function decoderSequenceCreole(sequence) {
             let nombres = sequence.split('.');
             let motDecode = [];
@@ -920,7 +959,9 @@
                     let numero = parseInt(nombre);
                     if (numero >= 1 && numero <= 26) {
                         let lettre = ALPHABET_INVERSE[numero];
-                        motDecode.push(lettre);
+                        if (lettre) {
+                            motDecode.push(lettre);
+                        }
                     }
                 }
             }
@@ -1569,7 +1610,7 @@
                 }, 1000);
             });
             
-            // Gestionnaire pour le bouton de décodage
+            // CORRECTION: Gestionnaire pour le bouton de décodage amélioré
             document.getElementById('decode-btn').addEventListener('click', function() {
                 const inputText = document.getElementById('input-text').value.trim();
                 
@@ -1578,8 +1619,26 @@
                     return;
                 }
                 
-                if (!inputText.includes('.') || !inputText.split('.').every(part => /^\d+$/.test(part))) {
-                    showNotification('Veuillez entrer une séquence numérique valide (ex: 2.15.14.26.15.21.18)', 'error');
+                // Validation améliorée de la séquence
+                const parts = inputText.split('.');
+                let isValid = true;
+                let invalidParts = [];
+                
+                for (let part of parts) {
+                    if (!/^\d+$/.test(part)) {
+                        isValid = false;
+                        invalidParts.push(part);
+                    } else {
+                        const num = parseInt(part);
+                        if (num < 1 || num > 26) {
+                            isValid = false;
+                            invalidParts.push(part);
+                        }
+                    }
+                }
+                
+                if (!isValid) {
+                    showNotification(`Séquence invalide. Parties incorrectes: ${invalidParts.join(', ')}`, 'error');
                     return;
                 }
                 
@@ -1591,7 +1650,12 @@
                 }
                 
                 document.getElementById('input-text').value = decodedWord;
-                document.getElementById('analyze-btn').click();
+                showNotification(`Séquence décodée: ${inputText} → ${decodedWord}`, 'success');
+                
+                // Lancer l'analyse automatiquement
+                setTimeout(() => {
+                    document.getElementById('analyze-btn').click();
+                }, 500);
             });
             
             // Gestionnaire pour le bouton de mot aléatoire
