@@ -1,0 +1,1745 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Truth Creole - Analyseur Cyberpunk Libre</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-cyan: #00ffff;
+            --primary-blue: #0099ff;
+            --dark-bg: #0a0a14;
+            --darker-bg: #05050a;
+            --light-text: #e0e0ff;
+            --accent-pink: #ff00ff;
+            --accent-green: #00ff88;
+            --accent-yellow: #ffff00;
+            --accent-purple: #9945ff;
+            --glow-intensity: 0 0 10px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Rajdhani', sans-serif;
+            background: linear-gradient(135deg, var(--darker-bg), var(--dark-bg));
+            color: var(--light-text);
+            min-height: 100vh;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        body::before {
+            content: "";
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(circle at 20% 30%, rgba(0, 255, 255, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 70%, rgba(0, 153, 255, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 50% 50%, rgba(153, 69, 255, 0.05) 0%, transparent 70%);
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+            position: relative;
+            z-index: 1;
+        }
+
+        header {
+            text-align: center;
+            padding: 30px 0;
+            position: relative;
+        }
+
+        h1 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 3.5rem;
+            font-weight: 900;
+            background: linear-gradient(90deg, var(--primary-cyan), var(--primary-blue), var(--accent-purple));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            text-shadow: var(--glow-intensity) var(--primary-cyan);
+            margin-bottom: 10px;
+            letter-spacing: 2px;
+            animation: pulse 2s infinite alternate;
+        }
+
+        @keyframes pulse {
+            0% { filter: brightness(1); }
+            100% { filter: brightness(1.2); }
+        }
+
+        .subtitle {
+            font-size: 1.2rem;
+            color: var(--accent-green);
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+        }
+
+        .free-badge {
+            display: inline-block;
+            background: linear-gradient(90deg, var(--accent-green), var(--accent-yellow));
+            color: var(--dark-bg);
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-weight: 700;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            animation: glow-green 2s infinite alternate;
+        }
+
+        @keyframes glow-green {
+            0% { box-shadow: 0 0 5px rgba(0, 255, 136, 0.5); }
+            100% { box-shadow: 0 0 20px rgba(0, 255, 136, 0.8); }
+        }
+
+        .input-section {
+            background: rgba(10, 10, 30, 0.7);
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+            border: 1px solid rgba(0, 255, 255, 0.3);
+            box-shadow: 0 0 20px rgba(0, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        label {
+            color: var(--primary-cyan);
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-size: 1.1rem;
+        }
+
+        input[type="text"] {
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(0, 255, 255, 0.5);
+            border-radius: 8px;
+            padding: 15px;
+            color: var(--light-text);
+            font-size: 1.2rem;
+            font-family: 'Orbitron', sans-serif;
+            transition: all 0.3s ease;
+        }
+
+        input[type="text"]:focus {
+            outline: none;
+            border-color: var(--primary-cyan);
+            box-shadow: 0 0 15px rgba(0, 255, 255, 0.5);
+            background: rgba(0, 0, 0, 0.7);
+        }
+
+        .button-group {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+
+        button {
+            background: linear-gradient(90deg, var(--primary-blue), var(--primary-cyan));
+            border: none;
+            border-radius: 8px;
+            padding: 12px 25px;
+            color: var(--dark-bg);
+            font-weight: 700;
+            font-size: 1rem;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: all 0.3s ease;
+            font-family: 'Orbitron', sans-serif;
+            position: relative;
+            overflow: hidden;
+        }
+
+        button::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            transition: left 0.5s ease;
+        }
+
+        button:hover::before {
+            left: 100%;
+        }
+
+        button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0, 255, 255, 0.5);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        .results-section {
+            display: none;
+            margin-top: 30px;
+        }
+
+        .result-card {
+            background: rgba(10, 10, 30, 0.7);
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 20px;
+            border: 1px solid rgba(0, 255, 255, 0.3);
+            box-shadow: 0 0 20px rgba(0, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .result-card::before {
+            content: "";
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            right: -2px;
+            bottom: -2px;
+            background: linear-gradient(45deg, var(--primary-cyan), var(--primary-blue), var(--accent-pink), var(--accent-green));
+            border-radius: 15px;
+            z-index: -1;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .result-card:hover::before {
+            opacity: 0.7;
+        }
+
+        .card-title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.5rem;
+            color: var(--primary-cyan);
+            margin-bottom: 15px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .card-title::before {
+            content: "▶";
+            color: var(--accent-green);
+        }
+
+        .result-content {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+        }
+
+        .result-item {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 12px;
+            border-radius: 8px;
+            border-left: 3px solid var(--primary-cyan);
+            transition: all 0.3s ease;
+        }
+
+        .result-item:hover {
+            background: rgba(0, 255, 255, 0.05);
+            transform: translateX(5px);
+        }
+
+        .result-label {
+            color: var(--accent-green);
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 5px;
+        }
+
+        .result-value {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--light-text);
+            word-break: break-all;
+        }
+
+        .alphabet-table {
+            display: none;
+            margin-top: 30px;
+            background: rgba(10, 10, 30, 0.7);
+            border-radius: 15px;
+            padding: 25px;
+            border: 1px solid rgba(0, 255, 255, 0.3);
+            box-shadow: 0 0 20px rgba(0, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+        }
+
+        .alphabet-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .alphabet-item {
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(0, 255, 255, 0.3);
+            border-radius: 8px;
+            padding: 10px;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .alphabet-item:hover {
+            background: rgba(0, 255, 255, 0.1);
+            border-color: var(--primary-cyan);
+            transform: scale(1.05);
+            box-shadow: 0 0 10px rgba(0, 255, 255, 0.5);
+        }
+
+        .letter {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary-cyan);
+        }
+
+        .letter-value {
+            font-size: 1.1rem;
+            color: var(--accent-green);
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .loading-spinner {
+            border: 3px solid rgba(0, 255, 255, 0.3);
+            border-top: 3px solid var(--primary-cyan);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(10, 10, 30, 0.9);
+            border: 1px solid var(--primary-cyan);
+            border-radius: 10px;
+            padding: 15px 20px;
+            color: var(--light-text);
+            box-shadow: 0 0 20px rgba(0, 255, 255, 0.5);
+            transform: translateX(150%);
+            transition: transform 0.3s ease;
+            z-index: 1000;
+            max-width: 300px;
+        }
+
+        .notification.show {
+            transform: translateX(0);
+        }
+
+        .notification.success {
+            border-color: var(--accent-green);
+            box-shadow: 0 0 20px rgba(0, 255, 136, 0.5);
+        }
+
+        .notification.error {
+            border-color: var(--accent-pink);
+            box-shadow: 0 0 20px rgba(255, 0, 255, 0.5);
+        }
+
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            border-bottom: 1px solid rgba(0, 255, 255, 0.3);
+            flex-wrap: wrap;
+        }
+
+        .tab {
+            padding: 10px 20px;
+            background: transparent;
+            border: none;
+            color: var(--light-text);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 700;
+        }
+
+        .tab::after {
+            content: "";
+            position: absolute;
+            bottom: -1px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: var(--primary-cyan);
+            transition: width 0.3s ease;
+        }
+
+        .tab.active::after {
+            width: 100%;
+        }
+
+        .tab.active {
+            color: var(--primary-cyan);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .share-section {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+
+        .share-button {
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(0, 255, 255, 0.5);
+            border-radius: 8px;
+            padding: 10px 15px;
+            color: var(--light-text);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .share-button:hover {
+            background: rgba(0, 255, 255, 0.1);
+            border-color: var(--primary-cyan);
+        }
+
+        .particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        .particle {
+            position: absolute;
+            width: 2px;
+            height: 2px;
+            background: var(--primary-cyan);
+            border-radius: 50%;
+            opacity: 0.5;
+        }
+
+        .history-section {
+            margin-top: 30px;
+            background: rgba(10, 10, 30, 0.7);
+            border-radius: 15px;
+            padding: 25px;
+            border: 1px solid rgba(0, 255, 255, 0.3);
+            box-shadow: 0 0 20px rgba(0, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+        }
+
+        .history-item {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.3s ease;
+        }
+
+        .history-item:hover {
+            background: rgba(0, 255, 255, 0.05);
+            transform: translateX(5px);
+        }
+
+        .history-word {
+            font-weight: 700;
+            color: var(--primary-cyan);
+        }
+
+        .history-value {
+            color: var(--accent-green);
+        }
+
+        .history-time {
+            color: var(--light-text);
+            opacity: 0.7;
+            font-size: 0.9rem;
+        }
+
+        .clear-history {
+            background: linear-gradient(90deg, var(--accent-pink), var(--accent-purple));
+            margin-top: 15px;
+        }
+
+        .export-section {
+            margin-top: 20px;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .export-button {
+            background: linear-gradient(90deg, var(--accent-green), var(--accent-yellow));
+            border: none;
+            border-radius: 8px;
+            padding: 10px 20px;
+            color: var(--dark-bg);
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .export-button:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 15px rgba(0, 255, 136, 0.5);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .stat-card {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 8px;
+            padding: 15px;
+            text-align: center;
+            border: 1px solid rgba(0, 255, 255, 0.3);
+            transition: all 0.3s ease;
+        }
+
+        .stat-card:hover {
+            background: rgba(0, 255, 255, 0.05);
+            transform: translateY(-5px);
+        }
+
+        .stat-number {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 2rem;
+            font-weight: 900;
+            color: var(--primary-cyan);
+        }
+
+        .stat-label {
+            color: var(--accent-green);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-top: 5px;
+        }
+
+        .batch-section {
+            margin-top: 20px;
+            background: rgba(10, 10, 30, 0.7);
+            border-radius: 15px;
+            padding: 25px;
+            border: 1px solid rgba(0, 255, 255, 0.3);
+            box-shadow: 0 0 20px rgba(0, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+        }
+
+        textarea {
+            width: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(0, 255, 255, 0.5);
+            border-radius: 8px;
+            padding: 15px;
+            color: var(--light-text);
+            font-size: 1rem;
+            font-family: 'Rajdhani', sans-serif;
+            transition: all 0.3s ease;
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: var(--primary-cyan);
+            box-shadow: 0 0 15px rgba(0, 255, 255, 0.5);
+            background: rgba(0, 0, 0, 0.7);
+        }
+
+        .batch-results {
+            margin-top: 20px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .batch-item {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-left: 3px solid var(--primary-cyan);
+        }
+
+        .batch-word {
+            font-weight: 700;
+            color: var(--primary-cyan);
+            margin-bottom: 5px;
+        }
+
+        .batch-details {
+            color: var(--light-text);
+            font-size: 0.9rem;
+        }
+
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2.5rem;
+            }
+            
+            .button-group {
+                grid-template-columns: 1fr;
+            }
+            
+            button {
+                width: 100%;
+            }
+            
+            .tabs {
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="particles" id="particles"></div>
+    
+    <div class="container">
+        <header>
+            <h1>TRUTH CREOLE</h1>
+            <p class="subtitle">Analyseur de Créole Réunionnais</p>
+            <span class="free-badge">🔓 100% LIBRE ET GRATUIT</span>
+        </header>
+
+        <section class="input-section">
+            <div class="input-group">
+                <label for="input-text">Entrez un mot créole </label>
+                <input type="text" id="input-text" placeholder="Ex: BONZOUR">
+            </div>
+            
+            <div class="button-group">
+                <button id="analyze-btn">🔍 Analyser</button>
+                <button id="decode-btn">🔓 Décoder</button>
+                <button id="random-btn">🎲 Mot Aléatoire</button>
+                <button id="alphabet-btn">📚 Voir Alphabet</button>
+                <button id="history-btn">📜 Historique</button>
+                <button id="batch-btn">⚡ Analyse Batch</button>
+            </div>
+        </section>
+
+        <div class="loading" id="loading">
+            <div class="loading-spinner"></div>
+            <p>Analyse en cours...</p>
+        </div>
+
+        <section class="results-section" id="results-section">
+            <div class="tabs">
+                <div class="tab active" data-tab="general">Général</div>
+                <div class="tab" data-tab="linguistic">Linguistique</div>
+                <div class="tab" data-tab="numeric">Numérique</div>
+                <div class="tab" data-tab="cultural">Culturel</div>
+                <div class="tab" data-tab="advanced">Avancé</div>
+            </div>
+            
+            <div class="tab-content active" id="general-tab">
+                <div class="result-card">
+                    <h3 class="card-title">Informations Générales</h3>
+                    <div class="result-content" id="general-results">
+                        <!-- Results will be populated here -->
+                    </div>
+                </div>
+            </div>
+            
+            <div class="tab-content" id="linguistic-tab">
+                <div class="result-card">
+                    <h3 class="card-title">Analyse Linguistique</h3>
+                    <div class="result-content" id="linguistic-results">
+                        <!-- Results will be populated here -->
+                    </div>
+                </div>
+            </div>
+            
+            <div class="tab-content" id="numeric-tab">
+                <div class="result-card">
+                    <h3 class="card-title">Analyse Numérique</h3>
+                    <div class="result-content" id="numeric-results">
+                        <!-- Results will be populated here -->
+                    </div>
+                </div>
+            </div>
+            
+            <div class="tab-content" id="cultural-tab">
+                <div class="result-card">
+                    <h3 class="card-title">Signification Culturelle</h3>
+                    <div class="result-content" id="cultural-results">
+                        <!-- Results will be populated here -->
+                    </div>
+                </div>
+            </div>
+            
+            <div class="tab-content" id="advanced-tab">
+                <div class="result-card">
+                    <h3 class="card-title">Analyses Avancées</h3>
+                    <div class="result-content" id="advanced-results">
+                        <!-- Results will be populated here -->
+                    </div>
+                </div>
+            </div>
+            
+            <div class="export-section">
+                <button class="export-button" id="export-json">📄 Exporter JSON</button>
+                <button class="export-button" id="export-csv">📊 Exporter CSV</button>
+                <button class="export-button" id="export-pdf">📑 Exporter PDF</button>
+                <button class="export-button" id="print-results">🖨️ Imprimer</button>
+            </div>
+            
+            <div class="share-section">
+                <button class="share-button" id="share-facebook">
+                    <span>📘</span> Partager sur Facebook
+                </button>
+                <button class="share-button" id="share-twitter">
+                    <span>🐦</span> Partager sur Twitter
+                </button>
+                <button class="share-button" id="share-linkedin">
+                    <span>💼</span> Partager sur LinkedIn
+                </button>
+                <button class="share-button" id="copy-results">
+                    <span>📋</span> Copier les Résultats
+                </button>
+            </div>
+        </section>
+
+        <section class="alphabet-table" id="alphabet-table">
+            <h3 class="card-title">Alphabet Créole Réunionnais</h3>
+            <div class="alphabet-grid" id="alphabet-grid">
+                <!-- Alphabet will be populated here -->
+            </div>
+        </section>
+
+        <section class="history-section" id="history-section" style="display: none;">
+            <h3 class="card-title">Historique des Analyses</h3>
+            <div id="history-list">
+                <!-- History items will be populated here -->
+            </div>
+            <button class="clear-history" id="clear-history">🗑️ Effacer l'historique</button>
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-number" id="total-analyses">0</div>
+                    <div class="stat-label">Analyses Totales</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="unique-words">0</div>
+                    <div class="stat-label">Mots Uniques</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="avg-value">0</div>
+                    <div class="stat-label">Valeur Moyenne</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="palindromes">0</div>
+                    <div class="stat-label">Palindromes</div>
+                </div>
+            </div>
+        </section>
+
+        <section class="batch-section" id="batch-section" style="display: none;">
+            <h3 class="card-title">Analyse par Lot</h3>
+            <div class="input-group">
+                <label for="batch-input">Entrez plusieurs mots (un par ligne)</label>
+                <textarea id="batch-input" placeholder="BONZOUR&#10;SAVA&#10;MÉRSI&#10;WALÉ"></textarea>
+            </div>
+            <button class="export-button" id="run-batch">▶️ Lancer l'analyse batch</button>
+            <div class="batch-results" id="batch-results">
+                <!-- Batch results will be populated here -->
+            </div>
+        </section>
+    </div>
+
+    <div class="notification" id="notification"></div>
+
+    <script>
+        // Alphabet créole réunionnais
+        const ALPHABET_CREOLE = {
+            'A': 1, 'B': 2, 'C': 3, 'D': 4, 'E': 5, 'F': 6, 'G': 7, 'H': 8, 'I': 9, 'J': 10,
+            'K': 11, 'L': 12, 'M': 13, 'N': 14, 'O': 15, 'P': 16, 'Q': 17, 'R': 18, 'S': 19, 'T': 20,
+            'U': 21, 'V': 22, 'W': 23, 'X': 24, 'Y': 25, 'Z': 26,
+            // Caractères accentués créoles
+            'É': 5, 'È': 5, 'Ê': 5, 'Ë': 5,
+            'À': 1, 'Â': 1,
+            'Î': 9, 'Ï': 9,
+            'Ô': 15, 'Ö': 15,
+            'Ù': 21, 'Û': 21, 'Ü': 21,
+            'Ç': 3,
+            'Ñ': 14
+        };
+
+        const ALPHABET_INVERSE = {
+            1: 'A', 2: 'B', 3: 'C', 4: 'D', 5: 'E', 6: 'F', 7: 'G', 8: 'H', 9: 'I', 10: 'J',
+            11: 'K', 12: 'L', 13: 'M', 14: 'N', 15: 'O', 16: 'P', 17: 'Q', 18: 'R', 19: 'S', 20: 'T',
+            21: 'U', 22: 'V', 23: 'W', 24: 'X', 25: 'Y', 26: 'Z'
+        };
+
+        const MOTS_CREOLES_COMMUNS = {
+            'BONZOUR': 'Bonjour',
+            'SAVA': 'Ça va',
+            'MÉRSI': 'Merci',
+            'WALÉ': 'Regarde',
+            'LAKAZ': 'Maison',
+            'ZANFAN': 'Enfant',
+            'GRAMOUN': 'Vieillard',
+            'KARÉ': 'Carré',
+            'ZOURÉ': 'Travailler',
+            'VIV': 'Vivre',
+            'MANZ': 'Manger',
+            'DORMI': 'Dormir',
+            'BON': 'Bon',
+            'MAL': 'Mal',
+            'GRAN': 'Grand',
+            'PITIT': 'Petit',
+            'NWAR': 'Noir',
+            'BLAN': 'Blanc',
+            'ROZ': 'Rose',
+            'BLE': 'Bleu',
+            'VÈRT': 'Vert',
+            'ROUZ': 'Rouge',
+            'LO': 'Eau',
+            'LAFIM': 'Feu',
+            'LATER': 'Terre',
+            'SOLÉY': 'Soleil',
+            'LALIN': 'Lune',
+            'ZETWAL': 'Étoile'
+        };
+
+        const SIGNIFICATIONS_NOMBRE = {
+            1: "Commencement, unité",
+            2: "Couple, dualité",
+            3: "Famille, Trinité",
+            4: "Carré, stabilité",
+            5: "Cinq - cinq sens",
+            6: "Six - l'habitude",
+            7: "Sept - bonheur",
+            8: "Huit - infini",
+            9: "Neuf - accomplissement",
+            10: "Dix - totalité",
+            11: "Onze - transition",
+            12: "Douze - cycle complet",
+            13: "Treize - transformation",
+            14: "Quatorze - équilibre",
+            15: "Quinze - important dans la culture créole",
+            16: "Seize - harmonie",
+            17: "Dix-sept - spiritualité",
+            18: "Dix-huit - prospérité",
+            19: "Dix-neuf - achèvement",
+            20: "Vingt - jugement",
+            21: "Vingt-et-un - succès",
+            22: "Vingt-deux - sagesse",
+            23: "Vingt-trois - créativité",
+            24: "Vingt-quatre - accomplissement",
+            25: "Vingt-cinq - grâce",
+            26: "Vingt-six - nombre de lettres de l'alphabet"
+        };
+
+        // Historique des analyses
+        let analysisHistory = JSON.parse(localStorage.getItem('creoleHistory')) || [];
+
+        // Fonctions d'analyse
+        function encoderMotCreole(mot) {
+            mot = mot.toUpperCase().trim();
+            let resultat = [];
+            
+            for (let lettre of mot) {
+                if (lettre in ALPHABET_CREOLE) {
+                    let numero = ALPHABET_CREOLE[lettre];
+                    resultat.push(numero.toString());
+                } else if (/[A-Z]/.test(lettre)) {
+                    let numero = lettre.charCodeAt(0) - 'A'.charCodeAt(0) + 1;
+                    resultat.push(numero.toString());
+                }
+            }
+            
+            return resultat.join('.');
+        }
+
+        function decoderSequenceCreole(sequence) {
+            let nombres = sequence.split('.');
+            let motDecode = [];
+            
+            for (let nombre of nombres) {
+                if (/^\d+$/.test(nombre)) {
+                    let numero = parseInt(nombre);
+                    if (numero >= 1 && numero <= 26) {
+                        let lettre = ALPHABET_INVERSE[numero];
+                        motDecode.push(lettre);
+                    }
+                }
+            }
+            
+            return motDecode.join('');
+        }
+
+        function motVersNombre(mot) {
+            mot = mot.toUpperCase().trim();
+            let total = 0;
+            
+            for (let lettre of mot) {
+                if (lettre in ALPHABET_CREOLE) {
+                    total += ALPHABET_CREOLE[lettre];
+                }
+            }
+            
+            return total;
+        }
+
+        function estPalindrome(mot) {
+            mot = mot.toUpperCase().replace(' ', '');
+            let motNettoye = '';
+            
+            for (let c of mot) {
+                if (c in ALPHABET_CREOLE || /[A-Z]/.test(c)) {
+                    motNettoye += c;
+                }
+            }
+            
+            return motNettoye === motNettoye.split('').reverse().join('');
+        }
+
+        function compterVoyellesCreoles(mot) {
+            const voyelles = 'AEÉÈÊËÀÂIÎÏOÔÖUÛÜY';
+            mot = mot.toUpperCase();
+            let count = 0;
+            
+            for (let lettre of mot) {
+                if (voyelles.includes(lettre)) {
+                    count++;
+                }
+            }
+            
+            return count;
+        }
+
+        function compterConsonnesCreoles(mot) {
+            const consonnes = 'BCÇDFGHJKLMNPQRSTVWXZ';
+            mot = mot.toUpperCase();
+            let count = 0;
+            
+            for (let lettre of mot) {
+                if (consonnes.includes(lettre)) {
+                    count++;
+                }
+            }
+            
+            return count;
+        }
+
+        function lettresUniques(mot) {
+            return [...new Set(mot.toUpperCase())].sort().join('');
+        }
+
+        function detecterMotsCreoles(mot) {
+            let motUpper = mot.toUpperCase();
+            if (motUpper in MOTS_CREOLES_COMMUNS) {
+                return `Mot créole connu: ${MOTS_CREOLES_COMMUNS[motUpper]}`;
+            } else {
+                return "Mot créole possible";
+            }
+        }
+
+        function factorize(n) {
+            if (n < 2) {
+                return [n];
+            }
+            
+            let factors = [];
+            let d = 2;
+            
+            while (d * d <= n) {
+                while (n % d === 0) {
+                    factors.push(d);
+                    n = Math.floor(n / d);
+                }
+                d++;
+            }
+            
+            if (n > 1) {
+                factors.push(n);
+            }
+            
+            return factors;
+        }
+
+        function isPrime(n) {
+            if (n < 2) {
+                return false;
+            }
+            
+            for (let i = 2; i <= Math.sqrt(n); i++) {
+                if (n % i === 0) {
+                    return false;
+                }
+            }
+            
+            return true;
+        }
+
+        function significationNombreCreole(nombre) {
+            return SIGNIFICATIONS_NOMBRE[nombre] || "Nombre général";
+        }
+
+        function calculerFrequenceLettres(mot) {
+            const freq = {};
+            mot = mot.toUpperCase();
+            
+            for (let lettre of mot) {
+                if (/[A-Z]/.test(lettre)) {
+                    freq[lettre] = (freq[lettre] || 0) + 1;
+                }
+            }
+            
+            return freq;
+        }
+
+        function calculerScoreComplexite(mot) {
+            let score = 0;
+            const freq = calculerFrequenceLettres(mot);
+            
+            // Complexité basée sur la longueur
+            score += mot.length * 2;
+            
+            // Complexité basée sur les lettres uniques
+            score += Object.keys(freq).length * 3;
+            
+            // Complexité basée sur les caractères accentués
+            for (let lettre of mot.toUpperCase()) {
+                if (lettre in ALPHABET_CREOLE && !/[A-Z]/.test(lettre)) {
+                    score += 5;
+                }
+            }
+            
+            // Bonus pour palindrome
+            if (estPalindrome(mot)) {
+                score += 10;
+            }
+            
+            return score;
+        }
+
+        function analyserMotCreole(mot) {
+            let results = {};
+            
+            // Informations de base
+            results.mot_original = mot;
+            results.mot_majuscules = mot.toUpperCase();
+            results.mot_minuscules = mot.toLowerCase();
+            results.longueur_mot = mot.length;
+            
+            // Encodage créole
+            results.sequence_creole = encoderMotCreole(mot);
+            results.valeur_numerique = motVersNombre(mot);
+            
+            // Décodage (pour vérification)
+            results.mot_decode = decoderSequenceCreole(results.sequence_creole);
+            
+            // Propriétés du texte
+            results.est_palindrome = estPalindrome(mot);
+            results.nombre_voyelles = compterVoyellesCreoles(mot);
+            results.nombre_consonnes = compterConsonnesCreoles(mot);
+            results.lettres_uniques = lettresUniques(mot);
+            results.mots_creoles = detecterMotsCreoles(mot);
+            
+            // Analyse avancée
+            results.frequence_lettres = calculerFrequenceLettres(mot);
+            results.complexite_score = calculerScoreComplexite(mot);
+            results.pourcentage_voyelles = Math.round((results.nombre_voyelles / mot.length) * 100);
+            results.pourcentage_consonnes = Math.round((results.nombre_consonnes / mot.length) * 100);
+            
+            // Analyse numérique basée sur la valeur totale
+            let nombre = results.valeur_numerique;
+            results.decimal = nombre;
+            results.hexadecimal = nombre.toString(16).toUpperCase();
+            results.binary = nombre.toString(2);
+            results.octal = nombre.toString(8);
+            
+            // Propriétés mathématiques
+            results.parity = nombre % 2 ? "Impair" : "Pair";
+            results.factors = factorize(nombre);
+            results.prime_status = isPrime(nombre) ? "Premier" : "Composé";
+            results.digit_sum = nombre.toString().split('').reduce((sum, digit) => sum + parseInt(digit), 0);
+            results.digit_count = nombre.toString().length;
+            results.square = nombre ** 2;
+            results.cube = nombre ** 3;
+            results.square_root = Math.sqrt(nombre);
+            results.fibonacci_position = getFibonacciPosition(nombre);
+            
+            // Hash et cryptographie
+            results.md5 = md5(nombre.toString());
+            results.sha256 = sha256(nombre.toString());
+            results.base64 = btoa(nombre.toString());
+            
+            // Valeur culturelle créole
+            results.signification_nombre = significationNombreCreole(nombre);
+            
+            return results;
+        }
+
+        function getFibonacciPosition(n) {
+            if (n === 0) return 0;
+            let a = 0, b = 1, pos = 1;
+            while (b < n) {
+                [a, b] = [b, a + b];
+                pos++;
+            }
+            return b === n ? pos : -1;
+        }
+
+        // Fonctions de hash simplifiées
+        function md5(str) {
+            let hash = 0;
+            for (let i = 0; i < str.length; i++) {
+                let char = str.charCodeAt(i);
+                hash = ((hash << 5) - hash) + char;
+                hash = hash & hash;
+            }
+            return Math.abs(hash).toString(16);
+        }
+
+        function sha256(str) {
+            return md5(str) + md5(str + "salt");
+        }
+
+        // Fonctions d'interface
+        function showNotification(message, type = 'success') {
+            const notification = document.getElementById('notification');
+            notification.textContent = message;
+            notification.className = 'notification show ' + type;
+            
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 3000);
+        }
+
+        function saveToHistory(results) {
+            const historyItem = {
+                word: results.mot_original,
+                value: results.valeur_numerique,
+                timestamp: new Date().toISOString(),
+                isPalindrome: results.est_palindrome
+            };
+            
+            analysisHistory.unshift(historyItem);
+            
+            // Garder seulement les 100 dernières analyses
+            if (analysisHistory.length > 100) {
+                analysisHistory = analysisHistory.slice(0, 100);
+            }
+            
+            localStorage.setItem('creoleHistory', JSON.stringify(analysisHistory));
+            updateHistoryDisplay();
+        }
+
+        function updateHistoryDisplay() {
+            const historyList = document.getElementById('history-list');
+            historyList.innerHTML = '';
+            
+            analysisHistory.slice(0, 10).forEach(item => {
+                const historyItem = document.createElement('div');
+                historyItem.className = 'history-item';
+                
+                const date = new Date(item.timestamp);
+                const timeString = date.toLocaleString('fr-FR', {
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    day: '2-digit',
+                    month: '2-digit'
+                });
+                
+                historyItem.innerHTML = `
+                    <div>
+                        <span class="history-word">${item.word}</span>
+                        <span class="history-value">→ ${item.value}</span>
+                        ${item.isPalindrome ? ' 🔄' : ''}
+                    </div>
+                    <div class="history-time">${timeString}</div>
+                `;
+                
+                historyList.appendChild(historyItem);
+            });
+            
+            updateStats();
+        }
+
+        function updateStats() {
+            const totalAnalyses = analysisHistory.length;
+            const uniqueWords = [...new Set(analysisHistory.map(item => item.word))].length;
+            const avgValue = totalAnalyses > 0 
+                ? Math.round(analysisHistory.reduce((sum, item) => sum + item.value, 0) / totalAnalyses)
+                : 0;
+            const palindromes = analysisHistory.filter(item => item.isPalindrome).length;
+            
+            document.getElementById('total-analyses').textContent = totalAnalyses;
+            document.getElementById('unique-words').textContent = uniqueWords;
+            document.getElementById('avg-value').textContent = avgValue;
+            document.getElementById('palindromes').textContent = palindromes;
+        }
+
+        function displayResults(results) {
+            // Afficher les résultats généraux
+            const generalResults = document.getElementById('general-results');
+            generalResults.innerHTML = `
+                <div class="result-item">
+                    <div class="result-label">Mot original</div>
+                    <div class="result-value">${results.mot_original}</div>
+                </div>
+                <div class="result-item">
+                    <div class="result-label">En majuscules</div>
+                    <div class="result-value">${results.mot_majuscules}</div>
+                </div>
+                <div class="result-item">
+                    <div class="result-label">En minuscules</div>
+                    <div class="result-value">${results.mot_minuscules}</div>
+                </div>
+                <div class="result-item">
+                    <div class="result-label">Longueur</div>
+                    <div class="result-value">${results.longueur_mot} caractères</div>
+                </div>
+                <div class="result-item">
+                    <div class="result-label">Palindrome</div>
+                    <div class="result-value">${results.est_palindrome ? 'Oui 🔄' : 'Non'}</div>
+                </div>
+                <div class="result-item">
+                    <div class="result-label">Séquence numérique</div>
+                    <div class="result-value">${results.sequence_creole}</div>
+                </div>
+            `;
+            
+            // Afficher les résultats linguistiques
+            const linguisticResults = document.getElementById('linguistic-results');
+            linguisticResults.innerHTML = `
+                <div class="result-item">
+                    <div class="result-label">Nombre de voyelles</div>
+                    <div class="result-value">${results.nombre_voyelles} (${results.pourcentage_voyelles}%)</div>
+                </div>
+                <div class="result-item">
+                    <div class="result-label">Nombre de consonnes</div>
+                    <div class="result-value">${results.nombre_consonnes} (${results.pourcentage_consonnes}%)</div>
+                </div>
+                <div class="result-item">
+                    <div class="result-label">Lettres uniques</div>
+                    <div class="result-value">${results.lettres_uniques}</div>
+                </div>
+                <div class="result-item">
+                    <div class="result-label">Identification</div>
+                    <div class="result-value">${results.mots_creoles}</div>
+                </div>
+                <div class="result-item">
+                    <div class="result-label">Mot décodé</div>
+                    <div class="result-value">${results.mot_decode}</div>
+                </div>
+                <div class="result-item">
+                    <div class="result-label">Valeur numérique</div>
+                    <div class="result-value">${results.valeur_numerique}</div>
+                </div>
+                <div class="result-item">
+                    <div class="result-label">Fréquence des lettres</div>
+                    <div class="result-value">${Object.entries(results.frequence_lettres).map(([l, f]) => `${l}(${f})`).join(', ')}</div>
+                </div>
+            `;
+            
+            // Afficher les résultats numériques
+            const numericResults = document.getElementById('numeric-results');
+            numericResults.innerHTML = `
+                <div class="result-item">
+                    <div class="result-label">Décimal</div>
+                    <div class="result-value">${results.decimal}</div>
+                </div>
+                <div class="result-item">
+                    <div class="result-label">Hexadécimal</div>
+                    <div class="result-value">${results.hexadecimal}</div>
+                </div>
+                <div class="result-item">
+                    <div class="result-label">Binaire</div>
+                    <div class="result-value">${results.binary}</div>
+                </div>
+                <div class="result-item">
+                    <div class="result-label">Octal</div>
+                    <div class="result-value">${results.octal}</div>
+                </div>
+                <div class="result-item">
+                    <div class="result-label">Parité</div>
+                    <div class="result-value">${results.parity}</div>
+                </div>
+                <div class="result-item">
+                    <div class="result-label">Facteurs</div>
+                    <div class="result-value">${results.factors.join(', ')}</div>
+                </div>
+                <div class="result-item">
+                    <div class="result-label">Premier/Composé</div>
+                    <div class="result-value">${results.prime_status}</div>
+                </div>
+                <div class="result-item">
+                    <div class="result-label">Somme des chiffres</div>
+                    <div class="result-value">${results.digit_sum}</div>
+                </div>
+                <div class="result-item">
+                    <div class="result-label">Position Fibonacci</div>
+                    <div class="result-value">${results.fibonacci_position > 0 ? `F${results.fibonacci_position}` : 'Non-Fibonacci'}</div>
+                </div>
+                <div class="result-item">
+                    <div class="result-label">Carré</div>
+                    <div class="result-value">${results.square}</div>
+                </div>
+                <div class="result-item">
+                    <div class="result-label">Cube</div>
+                    <div class="result-value">${results.cube}</div>
+                </div>
+                <div class="result-item">
+                    <div class="result-label">Racine carrée</div>
+                    <div class="result-value">${results.square_root.toFixed(4)}</div>
+                </div>
+                <div class="result-item">
+                    <div class="result-label">MD5</div>
+                    <div class="result-value">${results.md5}</div>
+                </div>
+                <div class="result-item">
+                    <div class="result-label">SHA-256</div>
+                    <div class="result-value">${results.sha256}</div>
+                </div>
+                <div class="result-item">
+                    <div class="result-label">Base64</div>
+                    <div class="result-value">${results.base64}</div>
+                </div>
+            `;
+            
+            // Afficher les résultats culturels
+            const culturalResults = document.getElementById('cultural-results');
+            culturalResults.innerHTML = `
+                <div class="result-item">
+                    <div class="result-label">Signification culturelle</div>
+                    <div class="result-value">${results.signification_nombre}</div>
+                </div>
+                <div class="result-item">
+                    <div class="result-label">Détail d'encodage</div>
+                    <div class="result-value">${getEncodingDetails(results.mot_original)}</div>
+                </div>
+            `;
+            
+            // Afficher les résultats avancés
+            const advancedResults = document.getElementById('advanced-results');
+            advancedResults.innerHTML = `
+                <div class="result-item">
+                    <div class="result-label">Score de complexité</div>
+                    <div class="result-value">${results.complexite_score}/100</div>
+                </div>
+                <div class="result-item">
+                    <div class="result-label">Ratio voyelles/consonnes</div>
+                    <div class="result-value">${results.nombre_voyelles}:${results.nombre_consonnes}</div>
+                </div>
+                <div class="result-item">
+                    <div class="result-label">Densité lexicale</div>
+                    <div class="result-value">${Math.round((results.lettres_uniques.length / results.longueur_mot) * 100)}%</div>
+                </div>
+                <div class="result-item">
+                    <div class="result-label">Mot inversé</div>
+                    <div class="result-value">${results.mot_majuscules.split('').reverse().join('')}</div>
+                </div>
+                <div class="result-item">
+                    <div class="result-label">Code ASCII moyen</div>
+                    <div class="result-value">${Math.round(results.mot_majuscules.split('').reduce((sum, c) => sum + c.charCodeAt(0), 0) / results.longueur_mot)}</div>
+                </div>
+                <div class="result-item">
+                    <div class="result-label">Symétrie</div>
+                    <div class="result-value">${results.est_palindrome ? 'Parfaitement symétrique' : 'Asymétrique'}</div>
+                </div>
+            `;
+            
+            // Afficher la section des résultats
+            document.getElementById('results-section').style.display = 'block';
+            
+            // Sauvegarder dans l'historique
+            saveToHistory(results);
+        }
+
+        function getEncodingDetails(mot) {
+            mot = mot.toUpperCase();
+            let details = [];
+            
+            for (let i = 0; i < mot.length; i++) {
+                let lettre = mot[i];
+                let code = '';
+                
+                if (lettre in ALPHABET_CREOLE) {
+                    code = ALPHABET_CREOLE[lettre];
+                } else if (/[A-Z]/.test(lettre)) {
+                    code = lettre.charCodeAt(0) - 'A'.charCodeAt(0) + 1;
+                }
+                
+                if (code) {
+                    details.push(`${i+1}. ${lettre} = ${code}`);
+                }
+            }
+            
+            return details.join('<br>');
+        }
+
+        function displayAlphabet() {
+            const alphabetGrid = document.getElementById('alphabet-grid');
+            alphabetGrid.innerHTML = '';
+            
+            // Créer un tableau trié par valeur numérique
+            let alphabetArray = [];
+            let valeursVues = new Set();
+            
+            for (let [lettre, valeur] of Object.entries(ALPHABET_CREOLE)) {
+                if (!valeursVues.has(valeur)) {
+                    alphabetArray.push({ lettre, valeur });
+                    valeursVues.add(valeur);
+                }
+            }
+            
+            alphabetArray.sort((a, b) => a.valeur - b.valeur);
+            
+            // Afficher l'alphabet
+            for (let item of alphabetArray) {
+                const alphabetItem = document.createElement('div');
+                alphabetItem.className = 'alphabet-item';
+                alphabetItem.innerHTML = `
+                    <div class="letter">${item.lettre}</div>
+                    <div class="letter-value">${item.valeur}</div>
+                `;
+                alphabetGrid.appendChild(alphabetItem);
+            }
+            
+            // Afficher la section de l'alphabet
+            document.getElementById('alphabet-table').style.display = 'block';
+        }
+
+        function getRandomCreoleWord() {
+            const words = Object.keys(MOTS_CREOLES_COMMUNS);
+            return words[Math.floor(Math.random() * words.length)];
+        }
+
+        function exportToJSON(results) {
+            const dataStr = JSON.stringify(results, null, 2);
+            const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
+            
+            const exportFileDefaultName = `creole_analysis_${results.mot_original}_${Date.now()}.json`;
+            
+            const linkElement = document.createElement('a');
+            linkElement.setAttribute('href', dataUri);
+            linkElement.setAttribute('download', exportFileDefaultName);
+            linkElement.click();
+        }
+
+        function exportToCSV(results) {
+            let csvContent = "Propriété,Valeur\n";
+            
+            for (let [key, value] of Object.entries(results)) {
+                if (typeof value === 'object') {
+                    value = JSON.stringify(value);
+                }
+                csvContent += `"${key}","${value}"\n`;
+            }
+            
+            const dataUri = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csvContent);
+            const exportFileDefaultName = `creole_analysis_${results.mot_original}_${Date.now()}.csv`;
+            
+            const linkElement = document.createElement('a');
+            linkElement.setAttribute('href', dataUri);
+            linkElement.setAttribute('download', exportFileDefaultName);
+            linkElement.click();
+        }
+
+        function exportToPDF(results) {
+            showNotification("Export PDF en cours de développement...", 'success');
+            // Implémentation future avec jsPDF ou similaire
+        }
+
+        function printResults() {
+            window.print();
+        }
+
+        function createParticles() {
+            const particlesContainer = document.getElementById('particles');
+            const particleCount = 50;
+            
+            for (let i = 0; i < particleCount; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                
+                const x = Math.random() * 100;
+                const y = Math.random() * 100;
+                const size = Math.random() * 3 + 1;
+                const duration = Math.random() * 20 + 10;
+                const delay = Math.random() * 5;
+                
+                particle.style.left = `${x}%`;
+                particle.style.top = `${y}%`;
+                particle.style.width = `${size}px`;
+                particle.style.height = `${size}px`;
+                particle.style.animation = `float ${duration}s infinite ease-in-out ${delay}s`;
+                
+                particlesContainer.appendChild(particle);
+            }
+        }
+
+        // Animation CSS pour les particules
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes float {
+                0% { transform: translateY(0) translateX(0); opacity: 0; }
+                10% { opacity: 0.5; }
+                90% { opacity: 0.5; }
+                100% { transform: translateY(-100vh) translateX(50px); opacity: 0; }
+            }
+        `;
+        document.head.appendChild(style);
+
+        // Gestionnaires d'événements
+        document.addEventListener('DOMContentLoaded', function() {
+            createParticles();
+            updateHistoryDisplay();
+            
+            // Gestionnaire pour le bouton d'analyse
+            document.getElementById('analyze-btn').addEventListener('click', function() {
+                const inputText = document.getElementById('input-text').value.trim();
+                
+                if (!inputText) {
+                    showNotification('Veuillez entrer un mot ou une séquence numérique', 'error');
+                    return;
+                }
+                
+                document.getElementById('loading').style.display = 'block';
+                document.getElementById('results-section').style.display = 'none';
+                
+                setTimeout(() => {
+                    const results = analyserMotCreole(inputText);
+                    displayResults(results);
+                    document.getElementById('loading').style.display = 'none';
+                    showNotification('Analyse terminée avec succès!', 'success');
+                }, 1000);
+            });
+            
+            // Gestionnaire pour le bouton de décodage
+            document.getElementById('decode-btn').addEventListener('click', function() {
+                const inputText = document.getElementById('input-text').value.trim();
+                
+                if (!inputText) {
+                    showNotification('Veuillez entrer une séquence numérique à décoder', 'error');
+                    return;
+                }
+                
+                if (!inputText.includes('.') || !inputText.split('.').every(part => /^\d+$/.test(part))) {
+                    showNotification('Veuillez entrer une séquence numérique valide (ex: 2.15.14.26.15.21.18)', 'error');
+                    return;
+                }
+                
+                const decodedWord = decoderSequenceCreole(inputText);
+                
+                if (!decodedWord) {
+                    showNotification('Impossible de décoder cette séquence', 'error');
+                    return;
+                }
+                
+                document.getElementById('input-text').value = decodedWord;
+                document.getElementById('analyze-btn').click();
+            });
+            
+            // Gestionnaire pour le bouton de mot aléatoire
+            document.getElementById('random-btn').addEventListener('click', function() {
+                const randomWord = getRandomCreoleWord();
+                document.getElementById('input-text').value = randomWord;
+                showNotification(`Mot aléatoire: ${randomWord}`, 'success');
+            });
+            
+            // Gestionnaire pour le bouton d'alphabet
+            document.getElementById('alphabet-btn').addEventListener('click', function() {
+                displayAlphabet();
+            });
+            
+            // Gestionnaire pour l'historique
+            document.getElementById('history-btn').addEventListener('click', function() {
+                const historySection = document.getElementById('history-section');
+                historySection.style.display = historySection.style.display === 'none' ? 'block' : 'none';
+            });
+            
+            // Gestionnaire pour l'analyse batch
+            document.getElementById('batch-btn').addEventListener('click', function() {
+                const batchSection = document.getElementById('batch-section');
+                batchSection.style.display = batchSection.style.display === 'none' ? 'block' : 'none';
+            });
+            
+            // Gestionnaire pour l'analyse batch
+            document.getElementById('run-batch').addEventListener('click', function() {
+                const batchInput = document.getElementById('batch-input').value.trim();
+                
+                if (!batchInput) {
+                    showNotification('Veuillez entrer des mots pour l\'analyse batch', 'error');
+                    return;
+                }
+                
+                const words = batchInput.split('\n').filter(word => word.trim());
+                const batchResults = document.getElementById('batch-results');
+                batchResults.innerHTML = '';
+                
+                words.forEach(word => {
+                    const results = analyserMotCreole(word.trim());
+                    const batchItem = document.createElement('div');
+                    batchItem.className = 'batch-item';
+                    batchItem.innerHTML = `
+                        <div class="batch-word">${word}</div>
+                        <div class="batch-details">
+                            Valeur: ${results.valeur_numerique} | 
+                            Séquence: ${results.sequence_creole} | 
+                            ${results.est_palindrome ? 'Palindrome' : ''}
+                        </div>
+                    `;
+                    batchResults.appendChild(batchItem);
+                });
+                
+                showNotification(`Analyse batch terminée: ${words.length} mots analysés`, 'success');
+            });
+            
+            // Gestionnaire pour effacer l'historique
+            document.getElementById('clear-history').addEventListener('click', function() {
+                if (confirm('Êtes-vous sûr de vouloir effacer tout l\'historique?')) {
+                    analysisHistory = [];
+                    localStorage.removeItem('creoleHistory');
+                    updateHistoryDisplay();
+                    showNotification('Historique effacé', 'success');
+                }
+            });
+            
+            // Gestionnaires pour les onglets
+            const tabs = document.querySelectorAll('.tab');
+            tabs.forEach(tab => {
+                tab.addEventListener('click', function() {
+                    tabs.forEach(t => t.classList.remove('active'));
+                    document.querySelectorAll('.tab-content').forEach(content => {
+                        content.classList.remove('active');
+                    });
+                    
+                    this.classList.add('active');
+                    const tabId = this.getAttribute('data-tab') + '-tab';
+                    document.getElementById(tabId).classList.add('active');
+                });
+            });
+            
+            // Gestionnaires pour les exportations
+            document.getElementById('export-json').addEventListener('click', function() {
+                const inputText = document.getElementById('input-text').value.trim();
+                const results = analyserMotCreole(inputText);
+                exportToJSON(results);
+            });
+            
+            document.getElementById('export-csv').addEventListener('click', function() {
+                const inputText = document.getElementById('input-text').value.trim();
+                const results = analyserMotCreole(inputText);
+                exportToCSV(results);
+            });
+            
+            document.getElementById('export-pdf').addEventListener('click', function() {
+                const inputText = document.getElementById('input-text').value.trim();
+                const results = analyserMotCreole(inputText);
+                exportToPDF(results);
+            });
+            
+            document.getElementById('print-results').addEventListener('click', function() {
+                printResults();
+            });
+            
+            // Gestionnaires pour les boutons de partage
+            document.getElementById('share-facebook').addEventListener('click', function() {
+                const inputText = document.getElementById('input-text').value;
+                const url = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(window.location.href)}&quote=${encodeURIComponent(`J'ai analysé le mot créole "${inputText}" avec Truth Creole - Analyseur 100% gratuit!`)}`;
+                window.open(url, '_blank');
+            });
+            
+            document.getElementById('share-twitter').addEventListener('click', function() {
+                const inputText = document.getElementById('input-text').value;
+                const url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(`J'ai analysé le mot créole "${inputText}" avec Truth Creole - Analyseur 100% gratuit!`)}&url=${encodeURIComponent(window.location.href)}`;
+                window.open(url, '_blank');
+            });
+            
+            document.getElementById('share-linkedin').addEventListener('click', function() {
+                const inputText = document.getElementById('input-text').value;
+                const url = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(window.location.href)}`;
+                window.open(url, '_blank');
+            });
+            
+            document.getElementById('copy-results').addEventListener('click', function() {
+                const inputText = document.getElementById('input-text').value;
+                const results = analyserMotCreole(inputText);
+                
+                let textToCopy = `🔍 Analyse Truth Creole - 100% Gratuit\n\n`;
+                textToCopy += `Mot: "${inputText}"\n`;
+                textToCopy += `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n`;
+                textToCopy += `📊 Séquence numérique: ${results.sequence_creole}\n`;
+                textToCopy += `🔢 Valeur numérique: ${results.valeur_numerique}\n`;
+                textToCopy += `🔄 Palindrome: ${results.est_palindrome ? 'Oui' : 'Non'}\n`;
+                textToCopy += `📝 Voyelles: ${results.nombre_voyelles} (${results.pourcentage_voyelles}%)\n`;
+                textToCopy += `🔤 Consonnes: ${results.nombre_consonnes} (${results.pourcentage_consonnes}%)\n`;
+                textToCopy += `🎭 Signification culturelle: ${results.signification_nombre}\n`;
+                textToCopy += `⚡ Score de complexité: ${results.complexite_score}/100\n`;
+                textToCopy += `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n`;
+                textToCopy += `🌐 Analyse avec Truth Creole - https://truth-creole.com`;
+                
+                navigator.clipboard.writeText(textToCopy).then(() => {
+                    showNotification('Résultats copiés dans le presse-papiers!', 'success');
+                }).catch(err => {
+                    showNotification('Impossible de copier les résultats', 'error');
+                });
+            });
+        });
+    </script>
+</body>
+</html>
